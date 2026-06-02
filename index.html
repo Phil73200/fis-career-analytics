@@ -507,3 +507,16 @@ loadData();
 
 </body>
 </html>
+
+complete:function(results){
+
+    console.log(results);
+    console.log(results.data.length);
+    console.log(results.data[0]);
+
+    data = results.data.filter(r => r.Name);
+
+    buildStats();
+    buildHistogram();
+    buildCards();
+}
