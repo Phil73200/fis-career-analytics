@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FIS Career Analytics</title>
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+<style>
+body{font-family:Arial,sans-serif;margin:20px}
+.controls{margin-bottom:15px}
+#table{height:450px;overflow:auto;border:1px solid #ccc}
+table{border-collapse:collapse;width:100%}
+th,td{border:1px solid #ddd;padding:4px;font-size:12px}
+tr:hover{background:#f0f0f0;cursor:pointer}
+</style>
+</head>
+<body>
+<h2>FIS Career Analytics</h2>
+
+<div class="controls">
+Nation :
+<select id="nation"><option value="ALL">Toutes</option></select>
+<input type="text" id="search" placeholder="Recherche athlète">
+</div>
+
+<div id="scatter" style="height:500px;"></div>
+<h3>Athlètes</h3>
+<div id="table"></div>
+<div id="career" style="height:500px;"></div>
+
+<script>
+let data=[];
+
+Papa.parse('data/MToTop15_GS.csv',{
+ download:true,
+ header:true,
+ dynamicTyping:true,
+ complete:function(res){
+   data=res.data.filter(r=>r.Name);
+   init();
+ }
+});
+
+function init(){
+ const nationSel=document.getElementById('nation');
+ [...new Set(data.map(d=>d.Nation).filter(Boolean))].sort().forEach(n=>{
+   const o=document.createElement('option');
+   o.value=n;o.text=n;
+   nationSel.add(o);
+ });
+
+ nationSel.onchange=refresh;
+ document.getElementById('search').oninput=refresh;
+ refresh();
+}
+
+function rowsFiltered(){
+ const nat=document.getElementById('nation').value;
+ const txt=document.getElementById('search').value.toLowerCase();
+ return data.filter(r=>
+   (nat==='ALL' || r.Nation===nat) &&
+   (!txt || String(r.Name).toLowerCase().includes(txt))
+ );
+}
+
+function refresh(){
+ const rows=rowsFiltered();
+
+ Plotly.newPlot('scatter',[{
+   x:rows.map(r=>r.AgeFirstTopRank),
+   y:rows.map(r=>r.SeasonsToTopRank),
+   text:rows.map(r=>r.Name),
+   customdata:rows,
+   mode:'markers',
+   type:'scatter'
+ }],{
+   title:'Age au premier Top15 vs saisons nécessaires',
+   xaxis:{title:'Age premier Top15'},
+   yaxis:{title:'Saisons vers Top15'}
+ });
+
+ document.getElementById('scatter').on('plotly_click',e=>showCareer(e.points[0].customdata));
+
+ let h='<table><tr><th>Nom</th><th>Nation</th><th>Né</th><th>1ère saison</th><th>1er Top15</th><th>Saisons</th></tr>';
+ rows.sort((a,b)=>(a.SeasonsToTopRank||999)-(b.SeasonsToTopRank||999));
+ rows.forEach((r,i)=>{
+   h+=`<tr onclick="showCareerIndex(${i})"><td>${r.Name}</td><td>${r.Nation}</td><td>${r.BirthYear}</td><td>${r.FirstSeason}</td><td>${r.FirstTopSeason}</td><td>${r.SeasonsToTopRank}</td></tr>`;
+ });
+ h+='</table>';
+ document.getElementById('table').innerHTML=h;
+ window.currentRows=rows;
+}
+
+function showCareerIndex(i){ showCareer(window.currentRows[i]); }
+
+function showCareer(r){
+ let years=[], ranks=[];
+ for(let y=2026;y>=2000;y--){
+   let v=r['Rank'+y];
+   if(v!==null && v!=='' && v!==undefined){
+      years.push(y);
+      ranks.push(v);
+   }
+ }
+ Plotly.newPlot('career',[{
+   x:years.reverse(),
+   y:ranks.reverse(),
+   mode:'lines+markers',
+   type:'scatter'
+ }],{
+   title:r.Name+' ('+r.Nation+')',
+   yaxis:{autorange:'reversed',title:'Rang mondial'},
+   xaxis:{title:'Saison'}
+ });
+}
+</script>
+</body>
+</html>
