@@ -2,486 +2,114 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Road To Top 15</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Road To Top 15 V2</title>
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <style>
-
-:root{
-    --sl:#e3f2fd;
-    --gs:#fce4ec;
-    --sg:#e8f5e9;
-    --dh:#fffde7;
-    --blue:#1565c0;
-}
-
-body{
-    margin:0;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    background:#f5f5f5;
-}
-
-header{
-    background:#1565c0;
-    color:white;
-    padding:15px;
-    text-align:center;
-}
-
-.controls{
-    display:flex;
-    flex-wrap:wrap;
-    justify-content:center;
-    gap:8px;
-    padding:12px;
-}
-
-button{
-    border:none;
-    border-radius:8px;
-    padding:10px 15px;
-    cursor:pointer;
-    font-weight:600;
-}
-
-.active{
-    border:2px solid #333;
-}
-
-#slBtn.active{background:var(--sl);}
-#gsBtn.active{background:var(--gs);}
-#sgBtn.active{background:var(--sg);}
-#dhBtn.active{background:var(--dh);}
-
-#mBtn.active,
-#wBtn.active{
-    background:#1565c0;
-    color:white;
-}
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-    gap:10px;
-    padding:10px;
-}
-
-.stat{
-    background:white;
-    border-radius:10px;
-    padding:15px;
-    text-align:center;
-}
-
-.big{
-    font-size:30px;
-    font-weight:bold;
-    color:#1565c0;
-}
-
-.panel{
-    background:white;
-    margin:10px;
-    padding:15px;
-    border-radius:10px;
-}
-
-.card{
-    margin:10px;
-    border-radius:10px;
-    padding:15px;
-    cursor:pointer;
-}
-
-.card.sl{background:var(--sl);}
-.card.gs{background:var(--gs);}
-.card.sg{background:var(--sg);}
-.card.dh{background:var(--dh);}
-
-.name{
-    font-weight:bold;
-    font-size:18px;
-}
-
-.modal{
-    display:none;
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.8);
-    overflow:auto;
-    z-index:999;
-}
-
-.modal-content{
-    background:white;
-    width:min(1000px,95%);
-    margin:20px auto;
-    padding:20px;
-    border-radius:10px;
-}
-
-.close{
-    float:right;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-}
-
-th,td{
-    border:1px solid #ddd;
-    padding:8px;
-    text-align:center;
-}
-
-th{
-    background:#f0f0f0;
-}
-
-@media(max-width:768px){
-
-    .stats{
-        grid-template-columns:1fr 1fr;
-    }
-
-    .name{
-        font-size:16px;
-    }
-
-}
-
+:root{--sl:#e3f2fd;--gs:#fce4ec;--sg:#e8f5e9;--dh:#fffde7}
+body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
+header{background:#1565c0;color:#fff;padding:12px;text-align:center}
+.controls,.filters{display:flex;flex-wrap:wrap;gap:8px;padding:10px;justify-content:center}
+button,select,input{padding:8px;border-radius:8px;border:1px solid #ccc}
+.active{border:2px solid #000}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;padding:10px}
+.stat,.panel,.card{background:#fff;border-radius:10px;padding:12px}
+.cards{padding:10px}
+.card{margin-bottom:8px;cursor:pointer}
+.sl{background:var(--sl)} .gs{background:var(--gs)} .sg{background:var(--sg)} .dh{background:var(--dh)}
+.big{font-size:28px;font-weight:bold}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);overflow:auto}
+.modal-content{background:#fff;width:min(1000px,95%);margin:20px auto;padding:20px}
 </style>
 </head>
-
 <body>
-
-<header>
-<h1>Road To Top 15</h1>
-</header>
+<header><h1>Road To Top 15 V2</h1></header>
 
 <div class="controls">
+<button id="SL">SL</button><button id="GS">GS</button><button id="SG">SG</button><button id="DH">DH</button>
+<button id="M">Hommes</button><button id="W">Femmes</button>
+</div>
 
-<button id="slBtn" class="active">SL</button>
-<button id="gsBtn">GS</button>
-<button id="sgBtn">SG</button>
-<button id="dhBtn">DH</button>
-
-<button id="mBtn" class="active">Hommes</button>
-<button id="wBtn">Femmes</button>
-
+<div class="filters">
+<select id="nation"><option value="">Toutes nations</option></select>
+<select id="objective">
+<option value="999">Tous</option><option value="15">Top 15</option><option value="10">Top 10</option>
+<option value="5">Top 5</option><option value="3">Top 3</option><option value="1">N°1</option>
+</select>
+<select id="sort">
+<option value="time">Temps vers Top</option>
+<option value="rank">Meilleur rang</option>
+<option value="name">Nom</option>
+<option value="birth">Naissance</option>
+</select>
+<input id="search" placeholder="Recherche athlète">
 </div>
 
 <div class="stats">
-
-<div class="stat">
-<div class="big" id="nbAthletes">0</div>
-Athlètes
+<div class="stat"><div class="big" id="s1">0</div>Athlètes</div>
+<div class="stat"><div class="big" id="s2">0</div>Moyenne saisons</div>
+<div class="stat"><div class="big" id="s3">0</div>Plus rapide</div>
+<div class="stat"><div class="big" id="s4">0</div>N°1 mondiaux</div>
 </div>
 
-<div class="stat">
-<div class="big" id="avgYears">0</div>
-Saisons moyennes
-</div>
-
-<div class="stat">
-<div class="big" id="fastest">0</div>
-Plus rapide
-</div>
-
-<div class="stat">
-<div class="big" id="bestRank">0</div>
-Meilleur rang
-</div>
-
-</div>
-
-<div class="panel">
-<h3>Histogramme</h3>
-<canvas id="histogram"></canvas>
-</div>
-
-<div id="cards"></div>
-
-<div class="modal" id="modal">
-
-<div class="modal-content">
-
-<button class="close" onclick="closeModal()">Fermer</button>
-
-<h2 id="athleteTitle"></h2>
-
-<div class="panel">
-<canvas id="careerChart"></canvas>
-</div>
-
-<div id="careerTable"></div>
-
-</div>
-
-</div>
+<div class="panel"><canvas id="hist"></canvas></div>
+<div class="cards" id="cards"></div>
 
 <script>
+let discipline='SL',gender='M',rows=[];
+function color(){return {SL:'#90caf9',GS:'#f8bbd0',SG:'#c8e6c9',DH:'#fff9c4'}[discipline]}
+function file(){return `Data/${discipline}_${gender}.csv`}
+function load(){
+Papa.parse(file(),{download:true,header:true,skipEmptyLines:true,dynamicTyping:true,
+complete:r=>{rows=r.data.filter(x=>x.Name);render();},
+error:e=>alert('CSV introuvable : '+file())});
+}
+function render(){
+let d=[...rows];
+const n=document.getElementById('nation').value;
+const o=+document.getElementById('objective').value;
+const q=document.getElementById('search').value.toLowerCase();
 
-let discipline="SL";
-let gender="M";
+if(n)d=d.filter(x=>x.Nation===n);
+if(o<999)d=d.filter(x=>(+x.BestRankCareer||999)<=o);
+if(q)d=d.filter(x=>x.Name.toLowerCase().includes(q));
 
-let athletes=[];
-let histogramChart=null;
-let careerChart=null;
+const sort=document.getElementById('sort').value;
+if(sort==='time')d.sort((a,b)=>a.SeasonsToTopRank-b.SeasonsToTopRank);
+if(sort==='rank')d.sort((a,b)=>a.BestRankCareer-b.BestRankCareer);
+if(sort==='name')d.sort((a,b)=>a.Name.localeCompare(b.Name));
+if(sort==='birth')d.sort((a,b)=>a.BirthYear-b.BirthYear);
 
-function fileName(){
-    return `Data/${discipline}_${gender}.csv`;
+document.getElementById('s1').textContent=d.length;
+const yrs=d.map(x=>+x.SeasonsToTopRank).filter(x=>x>0);
+document.getElementById('s2').textContent=yrs.length?(yrs.reduce((a,b)=>a+b,0)/yrs.length).toFixed(1):0;
+document.getElementById('s3').textContent=yrs.length?Math.min(...yrs):0;
+document.getElementById('s4').textContent=d.filter(x=>+x.BestRankCareer===1).length;
+
+const nat=document.getElementById('nation');
+if(nat.options.length===1){
+ [...new Set(rows.map(x=>x.Nation).filter(Boolean).sort())].forEach(v=>{
+  const o=document.createElement('option');o.value=v;o.textContent=v;nat.appendChild(o);
+ });
 }
 
-function loadCSV(){
-
-    Papa.parse(fileName(),{
-
-        download:true,
-        header:true,
-        dynamicTyping:true,
-        skipEmptyLines:true,
-
-        complete:function(results){
-
-            athletes=results.data.filter(r=>r.Name);
-
-            buildStats();
-            buildHistogram();
-            buildCards();
-
-        }
-
-    });
-
-}
-
-function buildStats(){
-
-    document.getElementById("nbAthletes").textContent=
-        athletes.length;
-
-    const years=athletes
-        .map(a=>Number(a.SeasonsToTopRank))
-        .filter(v=>!isNaN(v));
-
-    const avg=
-        years.length
-        ? years.reduce((a,b)=>a+b,0)/years.length
-        : 0;
-
-    document.getElementById("avgYears").textContent=
-        avg.toFixed(1);
-
-    document.getElementById("fastest").textContent=
-        years.length ? Math.min(...years) : 0;
-
-    const ranks=athletes
-        .map(a=>Number(a.BestRankCareer))
-        .filter(v=>!isNaN(v));
-
-    document.getElementById("bestRank").textContent=
-        ranks.length ? Math.min(...ranks) : 0;
-}
-
-function buildHistogram(){
-
-    const freq={};
-
-    athletes.forEach(a=>{
-
-        const y=a.SeasonsToTopRank;
-
-        if(!y) return;
-
-        freq[y]=(freq[y]||0)+1;
-
-    });
-
-    const labels=Object.keys(freq).sort((a,b)=>a-b);
-    const values=labels.map(x=>freq[x]);
-
-    if(histogramChart) histogramChart.destroy();
-
-    histogramChart=new Chart(
-        document.getElementById("histogram"),
-        {
-            type:"bar",
-            data:{
-                labels,
-                datasets:[{
-                    label:"Athlètes",
-                    data:values
-                }]
-            }
-        }
-    );
-}
-
-function buildCards(){
-
-    const div=document.getElementById("cards");
-
-    div.innerHTML="";
-
-    athletes
-    .sort((a,b)=>a.SeasonsToTopRank-b.SeasonsToTopRank)
-    .forEach(a=>{
-
-        const card=document.createElement("div");
-
-        card.className=
-            "card "+discipline.toLowerCase();
-
-        card.innerHTML=`
-            <div class="name">${a.Name}</div>
-            <div>${a.Nation}</div>
-            <div>Top 15 en ${a.SeasonsToTopRank} saisons</div>
-            <div>Meilleur rang : ${a.BestRankCareer}</div>
-        `;
-
-        card.onclick=()=>showAthlete(a);
-
-        div.appendChild(card);
-
-    });
-
-}
-
-function showAthlete(a){
-
-    document.getElementById("modal").style.display="block";
-
-    document.getElementById("athleteTitle").innerHTML=
-        `${a.Name} (${a.Nation})`;
-
-    const rankCols=Object.keys(a)
-        .filter(k=>k.startsWith("Rank"))
-        .sort();
-
-    const labels=[];
-    const values=[];
-
-    rankCols.forEach(c=>{
-
-        const num=Number(a[c]);
-
-        if(Number.isFinite(num) && num>0){
-
-            labels.push(c.replace("Rank",""));
-            values.push(num);
-
-        }
-
-    });
-
-    if(careerChart) careerChart.destroy();
-
-    careerChart=new Chart(
-        document.getElementById("careerChart"),
-        {
-            type:"line",
-            data:{
-                labels,
-                datasets:[{
-                    label:"Rang mondial",
-                    data:values
-                }]
-            },
-            options:{
-                scales:{
-                    y:{
-                        reverse:true,
-                        type:"logarithmic"
-                    }
-                }
-            }
-        }
-    );
-
-    let html="<table>";
-    html+="<tr><th>Saison</th><th>Rang</th></tr>";
-
-    rankCols.forEach(c=>{
-
-        if(a[c]!=="" && a[c]!=null){
-
-            html+=`
-            <tr>
-                <td>${c.replace("Rank","")}</td>
-                <td>${a[c]}</td>
-            </tr>`;
-        }
-
-    });
-
-    html+="</table>";
-
-    document.getElementById("careerTable").innerHTML=
-        html;
-}
-
-function closeModal(){
-    document.getElementById("modal").style.display="none";
-}
-
-function refreshButtons(){
-
-    ["SL","GS","SG","DH"].forEach(d=>{
-        document.getElementById(
-            d.toLowerCase()+"Btn"
-        ).classList.toggle(
-            "active",
-            discipline===d
-        );
-    });
-
-    document.getElementById("mBtn")
-        .classList.toggle("active",gender==="M");
-
-    document.getElementById("wBtn")
-        .classList.toggle("active",gender==="W");
-}
-
-["SL","GS","SG","DH"].forEach(d=>{
-
-    document.getElementById(
-        d.toLowerCase()+"Btn"
-    ).onclick=()=>{
-
-        discipline=d;
-
-        refreshButtons();
-        loadCSV();
-
-    };
-
+const freq={}; yrs.forEach(v=>freq[v]=(freq[v]||0)+1);
+if(window.h)window.h.destroy();
+window.h=new Chart(document.getElementById('hist'),{type:'bar',
+data:{labels:Object.keys(freq),datasets:[{data:Object.values(freq),backgroundColor:color()}]}});
+
+const c=document.getElementById('cards'); c.innerHTML='';
+d.forEach(a=>{
+ let div=document.createElement('div');
+ div.className='card '+discipline.toLowerCase();
+ div.innerHTML=`<b>${a.Name}</b> (${a.Nation})<br>Top 15 : ${a.SeasonsToTopRank} saisons<br>Meilleur rang : ${a.BestRankCareer}<br>Âge Top : ${a.AgeFirstTopRank}`;
+ c.appendChild(div);
 });
-
-document.getElementById("mBtn").onclick=()=>{
-
-    gender="M";
-    refreshButtons();
-    loadCSV();
-
-};
-
-document.getElementById("wBtn").onclick=()=>{
-
-    gender="W";
-    refreshButtons();
-    loadCSV();
-
-};
-
-loadCSV();
-
+}
+['SL','GS','SG','DH'].forEach(x=>document.getElementById(x).onclick=()=>{discipline=x;load();});
+['M','W'].forEach(x=>document.getElementById(x).onclick=()=>{gender=x;load();});
+['nation','objective','sort','search'].forEach(x=>document.getElementById(x).oninput=render);
+load();
 </script>
-
-</body>
-</html>
+</body></html>
