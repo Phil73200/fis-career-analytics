@@ -68,8 +68,8 @@ function refresh(){
  const rows=rowsFiltered();
 
  Plotly.newPlot('scatter',[{
-   x:rows.map(r=>r.AgeFirstTopRank),
-   y:rows.map(r=>r.SeasonsToTopRank),
+  x:rows.map(r=>r.FirstTopSeason),
+y:rows.map(r=>r.SeasonsToTopRank),
    text:rows.map(r=>r.Name),
    customdata:rows,
    mode:'markers',
