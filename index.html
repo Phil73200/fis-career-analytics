@@ -11,45 +11,25 @@
 
 <style>
 
-:root{
-    --blue:#1565c0;
-    --blue2:#1976d2;
-    --light:#f4f7fb;
-    --card:#ffffff;
-    --shadow:0 2px 10px rgba(0,0,0,.08);
-}
-
-*{
-    box-sizing:border-box;
-    margin:0;
-    padding:0;
-}
-
 body{
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    background:var(--light);
-    color:#222;
+    margin:0;
+    font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+    background:#f3f5f7;
 }
 
 header{
-    background:var(--blue);
+    background:#1565c0;
     color:white;
-    padding:18px;
     text-align:center;
-}
-
-header h1{
-    font-size:1.6rem;
+    padding:15px;
 }
 
 .controls{
-    background:white;
-    padding:15px;
     display:flex;
-    flex-wrap:wrap;
     justify-content:center;
     gap:10px;
-    box-shadow:var(--shadow);
+    padding:12px;
+    flex-wrap:wrap;
 }
 
 button{
@@ -60,111 +40,94 @@ button{
     font-weight:600;
 }
 
-.filter-btn{
-    background:#e0e0e0;
-}
-
-.filter-btn.active{
-    background:var(--blue);
+.active{
+    background:#1565c0;
     color:white;
 }
 
 .stats{
-    padding:15px;
     display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
     gap:12px;
+    padding:12px;
 }
 
-.stat-card{
+.stat{
     background:white;
-    padding:15px;
     border-radius:12px;
-    box-shadow:var(--shadow);
+    padding:15px;
     text-align:center;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 .stat-value{
-    font-size:1.8rem;
+    font-size:2rem;
+    color:#1565c0;
     font-weight:bold;
-    color:var(--blue);
 }
 
-.section{
+.panel{
+    background:white;
+    margin:12px;
     padding:15px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 .card{
     background:white;
-    border-radius:12px;
+    margin:10px 12px;
     padding:15px;
-    box-shadow:var(--shadow);
-    margin-bottom:12px;
+    border-radius:12px;
+    box-shadow:0 2px 8px rgba(0,0,0,.08);
     cursor:pointer;
-    transition:.2s;
 }
 
 .card:hover{
     transform:translateY(-2px);
 }
 
-.card-name{
+.name{
     font-size:1.1rem;
-    font-weight:700;
-}
-
-.card-info{
-    margin-top:5px;
-    color:#666;
-    font-size:.95rem;
-}
-
-.card-rank{
-    margin-top:8px;
-    font-size:1.1rem;
-    color:var(--blue);
     font-weight:bold;
 }
 
-.chart-container{
-    background:white;
-    border-radius:12px;
-    padding:15px;
-    box-shadow:var(--shadow);
-    margin-bottom:20px;
+.rank{
+    color:#1565c0;
+    font-weight:bold;
+    margin-top:5px;
 }
 
-canvas{
-    max-width:100%;
-}
-
-#athleteModal{
+.modal{
     display:none;
     position:fixed;
     inset:0;
-    background:rgba(0,0,0,.7);
-    z-index:999;
+    background:rgba(0,0,0,.75);
     overflow:auto;
+    z-index:999;
 }
 
 .modal-content{
     background:white;
     margin:20px auto;
     width:min(1000px,95%);
-    border-radius:12px;
     padding:20px;
+    border-radius:12px;
 }
 
-.close-btn{
+.close{
     float:right;
+    padding:8px 15px;
+    border:none;
     background:red;
     color:white;
+    border-radius:8px;
+    cursor:pointer;
 }
 
 table{
     width:100%;
     border-collapse:collapse;
-    margin-top:15px;
 }
 
 th,td{
@@ -179,21 +142,12 @@ th{
 
 @media(max-width:768px){
 
-    header h1{
-        font-size:1.2rem;
-    }
-
     .stats{
         grid-template-columns:1fr 1fr;
     }
 
     .modal-content{
         width:98%;
-        padding:12px;
-    }
-
-    table{
-        font-size:.8rem;
     }
 
 }
@@ -207,65 +161,56 @@ th{
 </header>
 
 <div class="controls">
-
-    <button class="filter-btn active" id="btnGS">GS</button>
-    <button class="filter-btn" id="btnSL">SL</button>
-
-    <button class="filter-btn active" id="btnM">Hommes</button>
-    <button class="filter-btn" id="btnW">Femmes</button>
-
+    <button id="gsBtn" class="active">GS</button>
+    <button id="slBtn">SL</button>
+    <button id="mBtn" class="active">Hommes</button>
+    <button id="wBtn">Femmes</button>
 </div>
 
 <div class="stats">
 
-    <div class="stat-card">
-        <div class="stat-value" id="totalAthletes">0</div>
+    <div class="stat">
+        <div id="nbAthletes" class="stat-value">0</div>
         <div>Athlètes</div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-value" id="avgYears">0</div>
+    <div class="stat">
+        <div id="avgYears" class="stat-value">0</div>
         <div>Saisons moyennes</div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-value" id="fastest">0</div>
-        <div>Progression la plus rapide</div>
+    <div class="stat">
+        <div id="fastest" class="stat-value">0</div>
+        <div>Plus rapide</div>
     </div>
 
-    <div class="stat-card">
-        <div class="stat-value" id="oldestSeason">0</div>
-        <div>Première saison</div>
+    <div class="stat">
+        <div id="bestRank" class="stat-value">0</div>
+        <div>Meilleur rang carrière</div>
     </div>
 
 </div>
 
-<div class="section">
-
-    <div class="chart-container">
-        <h3>Histogramme : saisons nécessaires pour atteindre le Top 15</h3>
-        <canvas id="histogramChart"></canvas>
-    </div>
-
-    <div id="athletesContainer"></div>
-
+<div class="panel">
+    <h3>Histogramme des saisons nécessaires</h3>
+    <canvas id="histogram"></canvas>
 </div>
 
-<div id="athleteModal">
+<div id="cards"></div>
+
+<div class="modal" id="modal">
 
     <div class="modal-content">
 
-        <button class="close-btn" onclick="closeModal()">Fermer</button>
+        <button class="close" onclick="closeModal()">Fermer</button>
 
-        <h2 id="modalTitle"></h2>
+        <h2 id="athleteTitle"></h2>
 
-        <br>
-
-        <div class="chart-container">
+        <div class="panel">
             <canvas id="careerChart"></canvas>
         </div>
 
-        <table id="careerTable"></table>
+        <div id="careerTable"></div>
 
     </div>
 
@@ -273,20 +218,20 @@ th{
 
 <script>
 
-let discipline = "GS";
-let gender = "M";
+let discipline="GS";
+let gender="M";
 
-let allData = [];
-let histogramChart = null;
-let careerChart = null;
+let data=[];
+let histogramChart=null;
+let careerChart=null;
 
-function fileName(){
+function csvFile(){
     return `Data/${discipline}_${gender}.csv`;
 }
 
 function loadData(){
 
-    Papa.parse(fileName(),{
+    Papa.parse(csvFile(),{
 
         download:true,
         header:true,
@@ -294,7 +239,7 @@ function loadData(){
 
         complete:function(results){
 
-            allData = results.data.filter(r => r.FullName);
+            data=results.data.filter(r=>r.Name);
 
             buildStats();
             buildHistogram();
@@ -308,59 +253,66 @@ function loadData(){
 
 function buildStats(){
 
-    document.getElementById("totalAthletes").textContent = allData.length;
+    document.getElementById("nbAthletes").textContent=data.length;
 
-    let years = allData.map(r => Number(r.SeasonsToTopRank)).filter(Boolean);
+    const years=data
+        .map(r=>Number(r.SeasonsToTopRank))
+        .filter(v=>!isNaN(v));
 
-    let avg = years.reduce((a,b)=>a+b,0)/years.length;
+    const avg=
+        years.length
+        ? years.reduce((a,b)=>a+b,0)/years.length
+        : 0;
 
-    document.getElementById("avgYears").textContent =
+    document.getElementById("avgYears").textContent=
         avg.toFixed(1);
 
-    document.getElementById("fastest").textContent =
-        Math.min(...years);
+    document.getElementById("fastest").textContent=
+        years.length ? Math.min(...years) : 0;
 
-    let seasons = allData.map(r => Number(r.FirstSeason));
+    const ranks=data
+        .map(r=>Number(r.BestRankCareer))
+        .filter(v=>!isNaN(v));
 
-    document.getElementById("oldestSeason").textContent =
-        Math.min(...seasons);
+    document.getElementById("bestRank").textContent=
+        ranks.length ? Math.min(...ranks) : 0;
 
 }
 
 function buildHistogram(){
 
-    const years = allData
-        .map(r => Number(r.SeasonsToTopRank))
-        .filter(Boolean);
+    const values=data
+        .map(r=>Number(r.SeasonsToTopRank))
+        .filter(v=>!isNaN(v));
 
-    const freq = {};
+    const counts={};
 
-    years.forEach(y=>{
-        freq[y]=(freq[y]||0)+1;
+    values.forEach(v=>{
+        counts[v]=(counts[v]||0)+1;
     });
 
-    const labels = Object.keys(freq).sort((a,b)=>a-b);
+    const labels=Object.keys(counts)
+        .sort((a,b)=>a-b);
 
-    const values = labels.map(l=>freq[l]);
+    const series=labels.map(l=>counts[l]);
 
     if(histogramChart){
         histogramChart.destroy();
     }
 
-    histogramChart = new Chart(
-        document.getElementById("histogramChart"),
+    histogramChart=new Chart(
+        document.getElementById("histogram"),
         {
             type:"bar",
             data:{
                 labels:labels,
                 datasets:[{
                     label:"Athlètes",
-                    data:values
+                    data:series
                 }]
             },
             options:{
-                responsive:true,
-                maintainAspectRatio:false
+                responsive:true
             }
         }
     );
@@ -369,41 +321,33 @@ function buildHistogram(){
 
 function buildCards(){
 
-    const container =
-        document.getElementById("athletesContainer");
+    const container=
+        document.getElementById("cards");
 
-    container.innerHTML = "";
+    container.innerHTML="";
 
-    allData
-    .sort((a,b)=>
-        Number(a.SeasonsToTopRank) -
-        Number(b.SeasonsToTopRank)
-    )
+    data
+    .sort((a,b)=>a.SeasonsToTopRank-b.SeasonsToTopRank)
     .forEach(row=>{
 
-        const div = document.createElement("div");
+        const card=document.createElement("div");
 
-        div.className="card";
+        card.className="card";
 
-        div.innerHTML=`
-
-            <div class="card-name">
-                ${row.FullName}
+        card.innerHTML=`
+            <div class="name">${row.Name}</div>
+            <div>${row.Nation}</div>
+            <div class="rank">
+                ${row.SeasonsToTopRank} saisons vers Top 15
             </div>
-
-            <div class="card-info">
-                ${row.Nationcode || ""}
+            <div>
+                Meilleur rang : ${row.BestRankCareer}
             </div>
-
-            <div class="card-rank">
-                ${row.SeasonsToTopRank} saisons
-            </div>
-
         `;
 
-        div.onclick=()=>showAthlete(row);
+        card.onclick=()=>showAthlete(row);
 
-        container.appendChild(div);
+        container.appendChild(card);
 
     });
 
@@ -411,10 +355,10 @@ function buildCards(){
 
 function showAthlete(row){
 
-    document.getElementById("athleteModal").style.display="block";
+    document.getElementById("modal").style.display="block";
 
-    document.getElementById("modalTitle").innerHTML=
-        row.FullName;
+    document.getElementById("athleteTitle").innerHTML=
+        `${row.Name} (${row.Nation})`;
 
     buildCareerChart(row);
     buildCareerTable(row);
@@ -422,32 +366,41 @@ function showAthlete(row){
 }
 
 function closeModal(){
-
-    document.getElementById("athleteModal").style.display="none";
-
+    document.getElementById("modal").style.display="none";
 }
 
 function buildCareerChart(row){
 
-    const seasonColumns =
+    const rankCols=
         Object.keys(row)
-        .filter(k => k.startsWith("Rank"))
+        .filter(k=>k.startsWith("Rank"))
         .sort((a,b)=>
-            Number(a.replace("Rank","")) -
+            Number(a.replace("Rank",""))
+            -
             Number(b.replace("Rank",""))
         );
 
-    const labels =
-        seasonColumns.map(c=>c.replace("Rank",""));
+    const labels=[];
+    const values=[];
 
-    const values =
-        seasonColumns.map(c=>Number(row[c]));
+    rankCols.forEach(c=>{
+
+        const v=row[c];
+
+        if(v && !isNaN(v)){
+
+            labels.push(c.replace("Rank",""));
+            values.push(v);
+
+        }
+
+    });
 
     if(careerChart){
         careerChart.destroy();
     }
 
-    careerChart = new Chart(
+    careerChart=new Chart(
         document.getElementById("careerChart"),
         {
             type:"line",
@@ -456,19 +409,15 @@ function buildCareerChart(row){
                 datasets:[{
                     label:"Rang mondial",
                     data:values,
-                    tension:0.2
+                    tension:0.3
                 }]
             },
             options:{
                 responsive:true,
                 scales:{
                     y:{
-                        type:"logarithmic",
                         reverse:true,
-                        title:{
-                            display:true,
-                            text:"Rang mondial"
-                        }
+                        type:"logarithmic"
                     }
                 }
             }
@@ -479,78 +428,78 @@ function buildCareerChart(row){
 
 function buildCareerTable(row){
 
-    const table =
-        document.getElementById("careerTable");
-
-    const seasonColumns =
+    const rankCols=
         Object.keys(row)
-        .filter(k => k.startsWith("Rank"))
+        .filter(k=>k.startsWith("Rank"))
         .sort((a,b)=>
-            Number(a.replace("Rank","")) -
             Number(b.replace("Rank",""))
+            -
+            Number(a.replace("Rank",""))
         );
 
-    let html = `
-        <tr>
-            <th>Saison</th>
-            <th>Rang</th>
-        </tr>
+    let html=`
+    <table>
+    <tr>
+        <th>Saison</th>
+        <th>Rang</th>
+    </tr>
     `;
 
-    seasonColumns.forEach(col=>{
+    rankCols.forEach(c=>{
 
-        html += `
+        if(row[c]){
+
+            html+=`
             <tr>
-                <td>${col.replace("Rank","")}</td>
-                <td>${row[col]}</td>
+                <td>${c.replace("Rank","")}</td>
+                <td>${row[c]}</td>
             </tr>
-        `;
+            `;
+
+        }
 
     });
 
-    table.innerHTML = html;
+    html+="</table>";
+
+    document.getElementById("careerTable").innerHTML=
+        html;
 
 }
 
-document.getElementById("btnGS").onclick=()=>{
+function updateButtons(){
+
+    gsBtn.classList.toggle("active",discipline==="GS");
+    slBtn.classList.toggle("active",discipline==="SL");
+
+    mBtn.classList.toggle("active",gender==="M");
+    wBtn.classList.toggle("active",gender==="W");
+
+}
+
+gsBtn.onclick=()=>{
     discipline="GS";
-    setButtons();
+    updateButtons();
     loadData();
 };
 
-document.getElementById("btnSL").onclick=()=>{
+slBtn.onclick=()=>{
     discipline="SL";
-    setButtons();
+    updateButtons();
     loadData();
 };
 
-document.getElementById("btnM").onclick=()=>{
+mBtn.onclick=()=>{
     gender="M";
-    setButtons();
+    updateButtons();
     loadData();
 };
 
-document.getElementById("btnW").onclick=()=>{
+wBtn.onclick=()=>{
     gender="W";
-    setButtons();
+    updateButtons();
     loadData();
 };
-
-function setButtons(){
-
-    document.getElementById("btnGS")
-        .classList.toggle("active",discipline==="GS");
-
-    document.getElementById("btnSL")
-        .classList.toggle("active",discipline==="SL");
-
-    document.getElementById("btnM")
-        .classList.toggle("active",gender==="M");
-
-    document.getElementById("btnW")
-        .classList.toggle("active",gender==="W");
-
-}
 
 loadData();
 
