@@ -12,6 +12,7 @@ body{font-family:Arial,sans-serif;margin:0;background:#f5f5f5}
 header{background:#1565c0;color:#fff;padding:12px;text-align:center}
 .controls,.filters{display:flex;flex-wrap:wrap;gap:8px;padding:10px;justify-content:center}
 button,select,input{padding:8px;border-radius:8px;border:1px solid #ccc;font-weight:600}
+#analysis{width:175px;max-width:100%}
 #SL{background:var(--sl)} #GS{background:var(--gs)} #SG{background:var(--sg)} #DH{background:var(--dh)}
 #M{background:var(--male);color:#fff} #W{background:var(--female);color:#fff}
 .active{border:3px solid #000}
@@ -43,15 +44,13 @@ button,select,input{padding:8px;border-radius:8px;border:1px solid #ccc;font-wei
 
 <div class="filters">
 <select id="nation"><option value="">Toutes nations</option></select>
-<select id="objective">
-<option value="15">Top 15</option><option value="10">Top 10</option>
-<option value="5">Top 5</option><option value="3">Top 3</option><option value="1">N°1</option>
-</select>
-<select id="sort">
-<option value="time">Durée pour Top X</option>
-<option value="rank">Meilleur rang</option>
-<option value="name">Nom</option>
-<option value="birth">Naissance</option>
+<select id="analysis" aria-label="Choisir le Top pour calculer la durée">
+<option value="" disabled selected>Durée pour Top X</option>
+<option value="15">Top 15</option>
+<option value="10">Top 10</option>
+<option value="5">Top 5</option>
+<option value="3">Top 3</option>
+<option value="1">N°1</option>
 </select>
 <input id="search" placeholder="Recherche athlète">
 </div>
@@ -65,10 +64,11 @@ button,select,input{padding:8px;border-radius:8px;border:1px solid #ccc;font-wei
 
 <div class="panel">
 <h2 id="durationTitle">Durée pour Top X</h2>
-<p>Nombre de coureurs par durée d’accès au Top choisi. Touchez une barre pour voir les noms.</p>
-<p id="analysisPeriod"></p>
+<p id="chartExplanation">Nombre de coureurs par durée d’accès au Top 15.</p>
+<p>Touchez une barre pour voir les noms.</p>
 
-<p id="durationCoverage"></p>
+
+
 <canvas id="hist"></canvas>
 </div>
 <aside id="histTooltip" class="hist-tooltip" hidden aria-live="polite">
@@ -88,6 +88,11 @@ button,select,input{padding:8px;border-radius:8px;border:1px solid #ccc;font-wei
 
 <script>
 let discipline='SL',gender='M',rows=[],careerChart=null;
+const analysis=document.getElementById('analysis');
+let topSelection=15;
+function selectedTop(){return topSelection;}
+analysis.value='';
+analysis.onchange=()=>{topSelection=+analysis.value;render();};
 function color(){return {SL:'#90caf9',GS:'#f8bbd0',SG:'#c8e6c9',DH:'#fff9c4'}[discipline]}
 function file(){return `Data/${discipline}_${gender}.csv`}
 
@@ -122,7 +127,7 @@ function durationForTop(a,top){
 }
 
 function showAthlete(a){
-const top=+objective.value,result=durationForTop(a,top);
+const top=selectedTop(),result=durationForTop(a,top);
 document.getElementById("modal").style.display="block";
 document.getElementById("athleteTitle").innerHTML=`${a.Name} (${a.Nation})`;
 document.getElementById("careerInfo").innerHTML=`
@@ -165,17 +170,16 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')hideHistogramTooltip
 
 function render(){
 let d=[...rows];
-const n=nation.value,o=+objective.value,q=search.value.toLowerCase();
+const n=nation.value,o=selectedTop(),q=search.value.toLowerCase();
 if(n)d=d.filter(x=>x.Nation===n);
 if(o<999)d=d.filter(x=>(+x.BestRankCareer||999)<=o);
 if(q)d=d.filter(x=>x.Name.toLowerCase().includes(q));
-const selected=d.length;
 d=d.map(a=>({...a,...durationForTop(a,o)})).filter(a=>a.duration!==null);
-durationTitle.textContent='Durée pour Top X';
-const excluded=selected-d.length;
-durationCoverage.textContent=`${d.length} durées vérifiables · ${excluded} historiques incomplets exclus.`;
+const topLabel=o===1?'n°1':`Top ${o}`;
+durationTitle.textContent=`Durée pour ${topLabel}`;
+document.getElementById('chartExplanation').textContent=`Nombre de coureurs par durée d’accès au ${topLabel}.`;
 
-const s=sort.value;
+const s='time';
 if(s==='time')d.sort((a,b)=>a.duration-b.duration);
 if(s==='rank')d.sort((a,b)=>a.BestRankCareer-b.BestRankCareer);
 if(s==='name')d.sort((a,b)=>a.Name.localeCompare(b.Name));
@@ -195,15 +199,12 @@ let o=document.createElement('option');o.value=v;o.textContent=v;nation.appendCh
 
 const freq={}; yrs.forEach(v=>freq[v]=(freq[v]||0)+1);
 if(window.h)window.h.destroy();
-const seasonColumns=Object.keys(rows[0]||{}).filter(k=>/^Rank\d{4}$/.test(k)).map(k=>+k.slice(4));
-const firstSeasons=rows.map(a=>+a.FirstSeason).filter(v=>v>0);
-analysisPeriod.textContent=seasonColumns.length ? `Classements ${Math.min(...seasonColumns)}–${Math.max(...seasonColumns)} · ${seasonColumns.length} saisons, première saison de carrière incluse.` : '';
 hideHistogramTooltip();
 window.h=new Chart(hist,{
  type:'bar',
  data:{labels:Object.keys(freq),datasets:[{label:'Nombre de coureurs',data:Object.values(freq),backgroundColor:color(),borderColor:'#000',borderWidth:1.5}]},
  options:{
-  scales:{x:{title:{display:true,text:`Saisons pour atteindre le Top ${o}`}},y:{beginAtZero:true,ticks:{precision:0},title:{display:true,text:'Nombre de coureurs'}}},
+  scales:{x:{title:{display:true,text:`Saisons pour atteindre le ${topLabel}`,font:{size:18,weight:'bold'},color:'#172b42'}},y:{beginAtZero:true,ticks:{precision:0},title:{display:true,text:'Nombre de coureurs'}}},
   plugins:{legend:{display:false},tooltip:{enabled:false,external:({tooltip})=>{
    if(!tooltip.opacity || !tooltip.dataPoints?.length)return;
    const seasons=+tooltip.dataPoints[0].label;
@@ -217,7 +218,7 @@ window.h=new Chart(hist,{
 
 ['SL','GS','SG','DH'].forEach(x=>document.getElementById(x).onclick=()=>{discipline=x;updateButtons();load();});
 ['M','W'].forEach(x=>document.getElementById(x).onclick=()=>{gender=x;updateButtons();load();});
-['nation','objective','sort','search'].forEach(x=>document.getElementById(x).oninput=render);
+['nation','search'].forEach(x=>document.getElementById(x).oninput=render);
 
 updateButtons();
 load();
