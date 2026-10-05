@@ -63,7 +63,7 @@ button,select,input{padding:8px;border-radius:8px;border:1px solid #ccc;font-wei
 </div>
 
 <div class="panel">
-<h2 id="durationTitle">Durée pour Top X</h2>
+<h2 id="durationTitle">Nombre de saisons pour atteindre le Top 15</h2>
 <p id="chartExplanation">Nombre de coureurs par durée d’accès au Top 15.</p>
 <p>Touchez une barre pour voir les noms.</p>
 
@@ -93,6 +93,21 @@ let topSelection=15;
 function selectedTop(){return topSelection;}
 analysis.value='';
 analysis.onchange=()=>{topSelection=+analysis.value;render();};
+const barCounts={
+ id:'barCounts',
+ afterDatasetsDraw(chart){
+  const {ctx}=chart;
+  ctx.save();
+  ctx.font='bold 14px Arial';
+  ctx.fillStyle='#172b42';
+  ctx.textAlign='center';
+  ctx.textBaseline='bottom';
+  chart.getDatasetMeta(0).data.forEach((bar,index)=>{
+   ctx.fillText(String(chart.data.datasets[0].data[index]),bar.x,bar.y-5);
+  });
+  ctx.restore();
+ }
+};
 function color(){return {SL:'#90caf9',GS:'#f8bbd0',SG:'#c8e6c9',DH:'#fff9c4'}[discipline]}
 function file(){return `Data/${discipline}_${gender}.csv`}
 
@@ -176,7 +191,7 @@ if(o<999)d=d.filter(x=>(+x.BestRankCareer||999)<=o);
 if(q)d=d.filter(x=>x.Name.toLowerCase().includes(q));
 d=d.map(a=>({...a,...durationForTop(a,o)})).filter(a=>a.duration!==null);
 const topLabel=o===1?'n°1':`Top ${o}`;
-durationTitle.textContent=`Durée pour ${topLabel}`;
+durationTitle.textContent=`Nombre de saisons pour atteindre le ${topLabel}`;
 document.getElementById('chartExplanation').textContent=`Nombre de coureurs par durée d’accès au ${topLabel}.`;
 
 const s='time';
@@ -202,9 +217,11 @@ if(window.h)window.h.destroy();
 hideHistogramTooltip();
 window.h=new Chart(hist,{
  type:'bar',
+ plugins:[barCounts],
  data:{labels:Object.keys(freq),datasets:[{label:'Nombre de coureurs',data:Object.values(freq),backgroundColor:color(),borderColor:'#000',borderWidth:1.5}]},
  options:{
-  scales:{x:{title:{display:true,text:`Saisons pour atteindre le ${topLabel}`,font:{size:18,weight:'bold'},color:'#172b42'}},y:{beginAtZero:true,ticks:{precision:0},title:{display:true,text:'Nombre de coureurs'}}},
+  layout:{padding:{top:20}},
+  scales:{x:{title:{display:false}},y:{beginAtZero:true,grace:'12%',ticks:{precision:0},title:{display:true,text:'Nombre de coureurs'}}},
   plugins:{legend:{display:false},tooltip:{enabled:false,external:({tooltip})=>{
    if(!tooltip.opacity || !tooltip.dataPoints?.length)return;
    const seasons=+tooltip.dataPoints[0].label;
